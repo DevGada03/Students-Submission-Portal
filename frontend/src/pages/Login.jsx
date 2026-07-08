@@ -84,12 +84,12 @@ const Login = () => {
         {isRegistering && (
           <div className="input-group">
             <label><User size={16} style={{ display: 'inline', marginRight: '0.25rem' }}/> Full Name</label>
-            <input type="text" name="name" placeholder="John Doe" value={formData.name} onChange={handleInputChange} required />
+            <input type="text" name="name" placeholder="Name Surname" value={formData.name} onChange={handleInputChange} required />
           </div>
         )}
         <div className="input-group">
           <label><User size={16} style={{ display: 'inline', marginRight: '0.25rem' }}/> Email Address</label>
-          <input type="email" name="email" placeholder="john@example.com" value={formData.email} onChange={handleInputChange} required />
+          <input type="email" name="email" placeholder="XYZ@gmail.com" value={formData.email} onChange={handleInputChange} required />
         </div>
         <div className="input-group">
           <label><Lock size={16} style={{ display: 'inline', marginRight: '0.25rem' }}/> Password</label>
