@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { PlusCircle, LogOut, Users, BookOpen, Trash2 } from 'lucide-react';
+import { API_BASE } from '../config';
 
 const FacultyDashboard = () => {
   const [assignments, setAssignments] = useState([]);
@@ -31,7 +32,7 @@ const FacultyDashboard = () => {
 
   const fetchAssignments = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/assignments', {
+      const res = await axios.get(`${API_BASE}/api/assignments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAssignments(res.data);
@@ -49,7 +50,7 @@ const FacultyDashboard = () => {
   const createAssignment = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/assignments', formData, {
+      await axios.post(`${API_BASE}/api/assignments`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setShowForm(false);
@@ -64,13 +65,13 @@ const FacultyDashboard = () => {
     setLoadingSubmissions(true);
     setPreviewUrl(null);
     try {
-      const res = await axios.get(`http://localhost:5000/api/submissions/assignment/${assignment._id}`, {
+      const res = await axios.get(`${API_BASE}/api/submissions/assignment/${assignment._id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSubmissions(res.data);
       // Auto-preview first submission if available
       if (res.data.length > 0) {
-        setPreviewUrl(`http://localhost:5000${res.data[0].fileUrl}`);
+        setPreviewUrl(res.data[0].fileData);
       }
     } catch (error) {
       alert('Error fetching submissions');
@@ -82,7 +83,7 @@ const FacultyDashboard = () => {
   const submitGrade = async (e, submissionId) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:5000/api/submissions/${submissionId}/grade`, gradingData, {
+      await axios.put(`${API_BASE}/api/submissions/${submissionId}/grade`, gradingData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('Graded successfully!');
@@ -97,7 +98,7 @@ const FacultyDashboard = () => {
   const deleteAssignment = async (id) => {
     if (!window.confirm("Are you sure you want to delete this assignment and all its submissions?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/assignments/${id}`, {
+      await axios.delete(`${API_BASE}/api/assignments/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('Assignment deleted successfully');
@@ -195,14 +196,14 @@ const FacultyDashboard = () => {
                       display: 'flex', 
                       justifyContent: 'space-between', 
                       alignItems: 'center', 
-                      background: previewUrl === `http://localhost:5000${sub.fileUrl}` ? 'rgba(236, 72, 153, 0.15)' : 'rgba(0,0,0,0.2)', 
+                      background: previewUrl === sub.fileData ? 'rgba(236, 72, 153, 0.15)' : 'rgba(0,0,0,0.2)', 
                       padding: '1rem', 
                       borderRadius: '8px',
-                      border: previewUrl === `http://localhost:5000${sub.fileUrl}` ? '1px solid var(--secondary)' : '1px solid transparent',
+                      border: previewUrl === sub.fileData ? '1px solid var(--secondary)' : '1px solid transparent',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease'
                     }}
-                    onClick={() => setPreviewUrl(`http://localhost:5000${sub.fileUrl}`)}
+                    onClick={() => setPreviewUrl(sub.fileData)}
                   >
                     <div>
                       <h4 style={{ margin: 0 }}>{sub.student?.name}</h4>

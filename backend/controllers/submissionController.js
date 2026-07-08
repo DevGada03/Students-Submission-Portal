@@ -3,10 +3,9 @@ const Assignment = require('../models/Assignment');
 
 const submitAssignment = async (req, res) => {
     try {
-        const { assignmentId } = req.body;
-        const fileUrl = req.file ? `/uploads/${req.file.filename}` : null;
+        const { assignmentId, fileData, fileName } = req.body;
 
-        if (!fileUrl) {
+        if (!fileData) {
             return res.status(400).json({ message: 'File is required for submission' });
         }
 
@@ -21,7 +20,8 @@ const submitAssignment = async (req, res) => {
         // Check if submission already exists for this student & assignment
         let existingSubmission = await Submission.findOne({ assignment: assignmentId, student: req.user.id });
         if (existingSubmission) {
-            existingSubmission.fileUrl = fileUrl;
+            existingSubmission.fileData = fileData;
+            existingSubmission.fileName = fileName;
             existingSubmission.status = 'submitted'; // Reset status to submitted if it was graded
             await existingSubmission.save();
             return res.status(200).json({ message: 'Submission updated successfully', submission: existingSubmission });
@@ -30,7 +30,8 @@ const submitAssignment = async (req, res) => {
         const newSubmission = new Submission({
             assignment: assignmentId,
             student: req.user.id,
-            fileUrl
+            fileData,
+            fileName
         });
 
         await newSubmission.save();

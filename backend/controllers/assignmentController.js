@@ -2,15 +2,15 @@ const Assignment = require('../models/Assignment');
 
 const createAssignment = async (req, res) => {
     try {
-        const { title, description, deadline, department } = req.body;
-        const fileUrl = req.file ? `/uploads/${req.file.filename}` : null;
+        const { title, description, deadline, department, fileData, fileName } = req.body;
 
         const newAssignment = new Assignment({
             title,
             description,
             deadline,
             department,
-            fileUrl,
+            fileData,
+            fileName,
             createdBy: req.user.id
         });
 

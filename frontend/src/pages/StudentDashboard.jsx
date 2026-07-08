@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { BookOpen, Upload, LogOut, CheckCircle, Clock } from 'lucide-react';
+import { API_BASE } from '../config';
 
 const StudentDashboard = () => {
   const [assignments, setAssignments] = useState([]);
@@ -23,7 +24,7 @@ const StudentDashboard = () => {
 
   const fetchAssignments = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/assignments', {
+      const res = await axios.get(`${API_BASE}/api/assignments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAssignments(res.data);
@@ -42,26 +43,31 @@ const StudentDashboard = () => {
     if (!selectedFile) return alert('Please select a file to submit.');
     
     setUploadingId(assignmentId);
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-    formData.append('assignmentId', assignmentId);
-
-    try {
-      await axios.post('http://localhost:5000/api/submissions', formData, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      alert('Assignment submitted successfully!');
-      setSelectedFile(null);
-      setEditModes({ ...editModes, [assignmentId]: false });
-      fetchAssignments();
-    } catch (error) {
-      alert(error.response?.data?.message || 'Error submitting assignment');
-    } finally {
-      setUploadingId(null);
-    }
+    const reader = new FileReader();
+    reader.readAsDataURL(selectedFile);
+    reader.onloadend = async () => {
+      const base64Data = reader.result;
+      try {
+        await axios.post(`${API_BASE}/api/submissions`, {
+          assignmentId,
+          fileData: base64Data,
+          fileName: selectedFile.name
+        }, {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        alert('Assignment submitted successfully!');
+        setSelectedFile(null);
+        setEditModes({ ...editModes, [assignmentId]: false });
+        fetchAssignments();
+      } catch (error) {
+        alert(error.response?.data?.message || 'Error submitting assignment');
+      } finally {
+        setUploadingId(null);
+      }
+    };
   };
 
   const handleLogout = () => {
@@ -134,8 +140,8 @@ const StudentDashboard = () => {
                         </div>
                       )}
 
-                      <a href={`http://localhost:5000${assignment.submission.fileUrl}`} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'none', fontSize: '0.85rem', alignSelf: 'flex-start' }}>
-                        View Submitted File
+                      <a href={assignment.submission.fileData} download={assignment.submission.fileName} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'none', fontSize: '0.85rem', alignSelf: 'flex-start' }}>
+                        View Submitted File ({assignment.submission.fileName})
                       </a>
 
                       <button 

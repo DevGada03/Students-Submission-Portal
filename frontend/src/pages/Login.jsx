@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { BookOpen, User, Lock, Building, UserCircle } from 'lucide-react';
+import { API_BASE } from '../config';
 
 const Login = () => {
   const [isStudent, setIsStudent] = useState(true);
@@ -27,7 +28,7 @@ const Login = () => {
 
     try {
       const endpoint = isRegistering ? '/api/auth/register' : '/api/auth/login';
-      const res = await axios.post(`http://localhost:5000${endpoint}`, payload);
+      const res = await axios.post(`${API_BASE}${endpoint}`, payload);
       
       if (isRegistering) {
         setIsRegistering(false);
