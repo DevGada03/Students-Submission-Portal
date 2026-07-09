@@ -7,7 +7,7 @@ import { API_BASE } from '../config';
 const StudentDashboard = () => {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState({});
   const [uploadingId, setUploadingId] = useState(null);
   const [editModes, setEditModes] = useState({});
   const navigate = useNavigate();
@@ -35,23 +35,24 @@ const StudentDashboard = () => {
     }
   };
 
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
+  const handleFileChange = (assignmentId, e) => {
+    setSelectedFiles(prev => ({ ...prev, [assignmentId]: e.target.files[0] }));
   };
 
   const submitAssignment = async (assignmentId) => {
-    if (!selectedFile) return alert('Please select a file to submit.');
+    const file = selectedFiles[assignmentId];
+    if (!file) return alert('Please select a file to submit.');
     
     setUploadingId(assignmentId);
     const reader = new FileReader();
-    reader.readAsDataURL(selectedFile);
+    reader.readAsDataURL(file);
     reader.onloadend = async () => {
       const base64Data = reader.result;
       try {
         await axios.post(`${API_BASE}/api/submissions`, {
           assignmentId,
           fileData: base64Data,
-          fileName: selectedFile.name
+          fileName: file.name
         }, {
           headers: { 
             Authorization: `Bearer ${token}`,
@@ -59,7 +60,11 @@ const StudentDashboard = () => {
           }
         });
         alert('Assignment submitted successfully!');
-        setSelectedFile(null);
+        setSelectedFiles(prev => {
+          const updated = { ...prev };
+          delete updated[assignmentId];
+          return updated;
+        });
         setEditModes({ ...editModes, [assignmentId]: false });
         fetchAssignments();
       } catch (error) {
@@ -154,7 +159,12 @@ const StudentDashboard = () => {
                     </div>
                   ) : (
                     <div>
-                      <input type="file" onChange={handleFileChange} style={{ marginBottom: '0.5rem', width: '100%', fontSize: '0.85rem' }} />
+                      <input 
+                        type="file" 
+                        key={selectedFiles[assignment._id] ? selectedFiles[assignment._id].name : 'empty'}
+                        onChange={(e) => handleFileChange(assignment._id, e)} 
+                        style={{ marginBottom: '0.5rem', width: '100%', fontSize: '0.85rem' }} 
+                      />
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button 
                           className="btn btn-primary" 
@@ -169,7 +179,11 @@ const StudentDashboard = () => {
                             className="btn btn-outline" 
                             style={{ padding: '0.5rem' }}
                             onClick={() => {
-                              setSelectedFile(null);
+                              setSelectedFiles(prev => {
+                                const updated = { ...prev };
+                                delete updated[assignment._id];
+                                return updated;
+                              });
                               setEditModes({ ...editModes, [assignment._id]: false });
                             }}
                           >

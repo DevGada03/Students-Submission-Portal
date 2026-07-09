@@ -36,7 +36,7 @@ const getAssignments = async (req, res) => {
                 const sub = studentSubmissions.find(s => s.assignment.toString() === assign._id.toString());
                 return {
                     ...assign,
-                    submission: sub ? { _id: sub._id, fileUrl: sub.fileUrl, status: sub.status, grade: sub.grade, feedback: sub.feedback } : null
+                    submission: sub ? { _id: sub._id, fileData: sub.fileData, fileName: sub.fileName, status: sub.status, grade: sub.grade, feedback: sub.feedback } : null
                 };
             });
         } else if (role === 'faculty') {
